@@ -44,14 +44,21 @@ if uploaded_file is not None:
         st.write("---")
         user_question = st.text_input("💬 ماذا تريدين أن تعرفي عن هذه البيانات؟ (مثلاً: لخص لي أهم النتائج)")
         
-        if st.button("تحليل الآن"):
-            with st.spinner("HKA AI يقوم بتحليل بياناتك..."):
-                # إرسال وصف البيانات للذكاء الاصطناعي
-                prompt = f"لديك بيانات تحتوي على الأعمدة التالية: {list(df.columns)}. وبناءً على أول 5 أسطر: {df.head().to_string()}. {user_question}"
-                response = model.generate_content(prompt)
-                st.markdown("### 🤖 نتائج التحليل الذكي:")
-                st.write(response.text)
-
+      if st.button("تحليل الآن"):
+            if "GOOGLE_API_KEY" not in st.secrets:
+                st.error("المفتاح السري غير موجود في الإعدادات!")
+            else:
+                with st.spinner("HKA AI يقوم بتحليل بياناتك..."):
+                    try:
+                        # إرسال ملخص الأعمدة وأول 5 أسطر فقط لتجنب الثقل
+                        context = f"الأعمدة: {list(df.columns)}. عينة بيانات: {df.head(5).to_string()}"
+                        prompt = f"بناءً على هذه البيانات: {context}. السؤال: {user_question}"
+                        
+                        response = model.generate_content(prompt)
+                        st.markdown("### 🤖 نتائج التحليل الذكي:")
+                        st.write(response.text)
+                    except Exception as e:
+                        st.error(f"حدث خطأ أثناء الاتصال بالذكاء الاصطناعي: {e}")
     except Exception as e:
         st.error(f"حدث خطأ: {e}")
 
