@@ -40,7 +40,7 @@ st.write("---")
 try:
     if "GOOGLE_API_KEY" in st.secrets:
         genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-        model = genai.GenerativeModel('gemini-pro')
+        model = genai.GenerativeModel('gemini-1.5-flash')
     else:
         st.warning("⚠️ يرجى إضافة GOOGLE_API_KEY في إعدادات Secrets لتفعيل التحليل الذكي.")
 except Exception as e:
