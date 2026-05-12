@@ -2,65 +2,47 @@ import streamlit as st
 import pandas as pd
 import google.generativeai as genai
 
-# إعداد واجهة الصفحة
+# إعداد واجهة الصفحة بلمساتك كمصممة جرافيك
 st.set_page_config(page_title="HKA Smart Analytics", page_icon="📊", layout="wide")
 
-# التصميم (الأسود والذهبي)
+# تطبيق ثيم الألوان (الأسود والذهبي)
 st.markdown("""
     <style>
     .main { background-color: #000000; color: #D4AF37; }
-    .stButton>button { background-color: #D4AF37; color: black; width: 100%; border-radius: 10px; }
-    h1, h2, h3 { color: #D4AF37; text-align: center; }
+    .stButton>button { background-color: #D4AF37; color: black; border-radius: 10px; }
+    h1 { color: #D4AF37; text-align: center; font-family: 'Arial'; }
     </style>
-    """, unsafe_allow_html=True)
+    """, unsafe_allow_complete_html=True)
 
+# عنوان الموقع بشعارك المفضل
 st.title("✨ HKA Smart Analytics ✨")
+st.write("---")
 
-# ربط الذكاء الاصطناعي
-if "GOOGLE_API_KEY" in st.secrets:
+# ربط المفتاح السري الذي وضعتيه في Secrets
+try:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
     model = genai.GenerativeModel('gemini-pro')
+except Exception as e:
+    st.error("يرجى التأكد من إعداد المفتاح السري (Secrets) بشكل صحيح.")
 
-# منطقة الرفع
+# منطقة رفع الملفات (Excel / CSV)
 uploaded_file = st.file_uploader("📂 ارفعي ملف البيانات الخاص بكِ (CSV or Excel)", type=["csv", "xlsx"])
 
 if uploaded_file is not None:
-    # 1. قراءة البيانات
     try:
-        df = pd.read_csv(uploaded_file) if uploaded_file.name.endswith('.csv') else pd.read_excel(uploaded_file)
+        if uploaded_file.name.endswith('.csv'):
+            df = pd.read_csv(uploaded_file)
+        else:
+            df = pd.read_excel(uploaded_file)
         
-        st.success("✅ تم استلام ملفك بنجاح!")
+        st.success("تم رفع الملف بنجاح!")
+        st.write("### نظرة سريعة على بياناتك:", df.head())
         
-        # 2. عرض ملخص سريع للبيانات (إنفوجرافيك أولي)
-        col1, col2, col3 = st.columns(3)
-        col1.metric("عدد الأسطر", len(df))
-        col2.metric("عدد الأعمدة", len(df.columns))
-        col3.metric("القيم المفقودة", df.isnull().sum().sum())
-
-        st.write("### 📋 معاينة البيانات:")
-        st.dataframe(df.head(10)) # عرض أول 10 أسطر بشكل أنيق
-
-        # 3. زر "اطلب من الذكاء الاصطناعي تحليل البيانات"
-        st.write("---")
-        user_question = st.text_input("💬 ماذا تريدين أن تعرفي عن هذه البيانات؟ (مثلاً: لخص لي أهم النتائج)")
+        # هنا سيتم إضافة ميزات التحليل الذكي وتوليد الإنفوجرافيك لاحقاً
+        st.info("الموقع الآن قيد التشغيل وجاهز للتحليل الذكي.")
         
-      if st.button("تحليل الآن"):
-            if "GOOGLE_API_KEY" not in st.secrets:
-                st.error("المفتاح السري غير موجود في الإعدادات!")
-            else:
-                with st.spinner("HKA AI يقوم بتحليل بياناتك..."):
-                    try:
-                        # إرسال ملخص الأعمدة وأول 5 أسطر فقط لتجنب الثقل
-                        context = f"الأعمدة: {list(df.columns)}. عينة بيانات: {df.head(5).to_string()}"
-                        prompt = f"بناءً على هذه البيانات: {context}. السؤال: {user_question}"
-                        
-                        response = model.generate_content(prompt)
-                        st.markdown("### 🤖 نتائج التحليل الذكي:")
-                        st.write(response.text)
-                    except Exception as e:
-                        st.error(f"حدث خطأ أثناء الاتصال بالذكاء الاصطناعي: {e}")
     except Exception as e:
-        st.error(f"حدث خطأ: {e}")
+        st.error(f"حدث خطأ أثناء قراءة الملف: {e}")
 
 st.write("---")
 st.caption("Powered by HKA Designer & AI Solutions")
